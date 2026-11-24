@@ -1,0 +1,5 @@
+# The Containerfile only needs the built packages and the entrypoint scripts.
+*
+!out/*.deb
+!docker-entrypoint/*.sh
+!docker-entrypoint/*.envsh

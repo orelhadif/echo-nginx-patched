@@ -1,0 +1,26 @@
+== Trivy
+  baseline:  960 findings,  604 unique CVEs
+  new:       589 findings,  338 unique CVEs
+  disappeared:  373  by severity {'MEDIUM': 164, 'UNKNOWN': 11, 'HIGH': 99, 'CRITICAL': 18, 'LOW': 81}
+  appeared:       2  by severity {'LOW': 2}
+  unchanged:    587
+  disappeared, by package: openssl(48), libssl3(48), libexpat1(33), libgnutls30(21), libxml2(21), perl-base(16), libcurl4(14), curl(14), libde265-0(14), libpng16-16(12), libc6(9), libc-bin(9)
+  appeared, by package:    nginx(2)
+  CVE-2026-27171   baseline zlib1g 1:1.2.13.dfsg-1 [MEDIUM, affected]
+  CVE-2026-27171   new      zlib1g 1:1.4-0+echo1 [MEDIUM, affected]
+  CVE-2025-23419   baseline not reported
+  CVE-2025-23419   new      not reported
+
+== Grype
+  baseline:  892 findings,  538 unique CVEs
+  new:       530 findings,  281 unique CVEs
+  disappeared:  362  by severity {'High': 156, 'Critical': 35, 'Medium': 144, 'Negligible': 3, 'Low': 22, 'Unknown': 2}
+  appeared:       0  by severity {}
+  unchanged:    530
+  disappeared, by package: openssl(48), libssl3(48), libexpat1(33), libgnutls30(21), libxml2(20), perl-base(16), libcurl4(14), curl(14), libpng16-16(12), libde265-0(12), libc6(9), libc-bin(9)
+  appeared, by package:    
+  CVE-2026-27171   baseline zlib1g 1:1.2.13.dfsg-1 [Medium, wont-fix]
+  CVE-2026-27171   new      zlib1g 1:1.4-0+echo1 [Medium, wont-fix]
+  CVE-2025-23419   baseline not reported
+  CVE-2025-23419   new      not reported
+

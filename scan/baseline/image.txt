@@ -1,0 +1,11 @@
+# Baseline image identity (scanned 2026-11-24)
+tag:            nginx:1.25-bookworm
+index digest:   sha256:a484819eb60211f5299034ac80f6a681b06f89e65866ce91f356ed7c72af059c
+platform:       linux/arm64 (manifest sha256:557b2c07439ee9e53cb178e3bdbb87114b31c48a41a17c8750c5908d65adeec6)
+amd64 manifest: sha256:e688fed0b0c7513a63364959e7d389c37ac8ecac7a6c6a31455eca2f5a71ab8b
+image created:  2024-05-03 (index annotation 2024-05-14), version 1.25.5, base debian:bookworm-slim (Debian 12.5)
+source:         github.com/nginxinc/docker-nginx@9abe4ae472b3332665fad9b12ee146dc242e775c mainline/debian
+nginx:          1.25.5-1~bookworm (nginx.org repo); built with OpenSSL 3.0.9, running with 3.0.11
+config:         Entrypoint ["/docker-entrypoint.sh"] Cmd ["nginx","-g","daemon off;"] Expose 80/tcp
+                StopSignal SIGQUIT  User "" (root, workers as nginx)  WorkingDir "" (/)
+scanners:       trivy 0.76.2 (DB 2026-11-24 07:08 UTC), grype 0.122.1 (DB v6.1.10 built 2026-11-24 06:22 UTC)

@@ -1,0 +1,42 @@
+# Builder: produces our .deb files from upstream source inside a clean
+# debian:bookworm-slim. Nothing pre-built is copied in - only our scripts,
+# patches and pinned public keys. Output is exported with
+#   docker build -f build/Dockerfile.build --output type=local,dest=out build/
+#
+# Base pinned by digest (debian:bookworm-slim, Debian 12.15, 2026-11-24) so the
+# toolchain does not drift between runs.
+ARG BASE=debian:bookworm-slim@sha256:e67eeead736ff7bbe258ef088bff683635c561b1fcfefad0806c1df4ab49ce0e
+
+FROM ${BASE} AS builder
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends \
+        build-essential dpkg-dev curl ca-certificates gnupg binutils \
+ && rm -rf /var/lib/apt/lists/*
+WORKDIR /build
+COPY . /build/
+
+# ---- zlib 1.4 (version bump, CVE-2026-27171) --------------------------------
+RUN bash /build/build-zlib.sh /out
+
+# Install OUR zlib1g/zlib1g-dev first, so nginx is compiled against the 1.4
+# headers and dpkg-shlibdeps records a dependency on our zlib1g. apt then sees
+# zlib1g-dev 1:1.4 as already satisfying the -dev packages that need it.
+RUN dpkg -i /out/zlib1g_*.deb /out/zlib1g-dev_*.deb \
+ && apt-get update \
+ && apt-get install -y --no-install-recommends \
+        debhelper quilt lsb-release devscripts fakeroot file git xz-utils \
+        xsltproc libxml2-utils \
+        libssl-dev libpcre2-dev libgeoip-dev libgd-dev libxml2-dev libxslt1-dev \
+        libedit-dev \
+ && dpkg-query -W zlib1g zlib1g-dev \
+ && rm -rf /var/lib/apt/lists/*
+
+# ---- nginx 1.25.5 + backports (CVE-2025-23419) ------------------------------
+# Tools above: debhelper/quilt/lsb-release/fakeroot = what pkg-oss's debian/rules
+# needs; devscripts = dch (changelog entry); git/xz = pkg-oss fetches QuickJS;
+# xsltproc/xmllint = pkg-oss renders the package changelogs.
+RUN bash /build/build-nginx.sh /out
+
+# Export only the packages.
+FROM scratch AS export
+COPY --from=builder /out/ /

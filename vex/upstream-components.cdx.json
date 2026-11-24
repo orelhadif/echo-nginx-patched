@@ -1,0 +1,41 @@
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.5",
+  "version": 1,
+  "metadata": {
+    "timestamp": "2026-11-24T21:34:38Z",
+    "component": {
+      "type": "container",
+      "name": "echo-nginx",
+      "version": "sha256:37d33a2bdf27d7225ef80f1fa6ef7cd8814fa049e98a2019c863b12e46586a7f",
+      "purl": "pkg:oci/echo-nginx@sha256%3A37d33a2bdf27d7225ef80f1fa6ef7cd8814fa049e98a2019c863b12e46586a7f",
+      "bom-ref": "pkg:oci/echo-nginx@sha256%3A37d33a2bdf27d7225ef80f1fa6ef7cd8814fa049e98a2019c863b12e46586a7f"
+    },
+    "properties": [
+      {
+        "name": "echo:note",
+        "value": "Upstream components only, identified by CPE; the full package list is in the image's dpkg database (scanned directly)."
+      }
+    ]
+  },
+  "components": [
+    {
+      "type": "application",
+      "name": "nginx",
+      "version": "1.25.5",
+      "cpe": "cpe:2.3:a:f5:nginx:1.25.5:*:*:*:*:*:*:*",
+      "purl": "pkg:generic/nginx@1.25.5-1~bookworm%2Becho1",
+      "bom-ref": "pkg:generic/nginx@1.25.5-1~bookworm%2Becho1",
+      "description": "nginx 1.25.5 + backport of CVE-2025-23419 (deb 1.25.5-1~bookworm+echo1, debian-12.15)"
+    },
+    {
+      "type": "library",
+      "name": "zlib",
+      "version": "1.4",
+      "cpe": "cpe:2.3:a:zlib:zlib:1.4:*:*:*:*:*:*:*",
+      "purl": "pkg:generic/zlib@1.4",
+      "bom-ref": "pkg:generic/zlib@1.4",
+      "description": "zlib 1.4 (deb zlib1g 1:1.4-0+echo1)"
+    }
+  ]
+}

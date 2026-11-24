@@ -1,0 +1,8 @@
+# Rendered by /docker-entrypoint.d/20-envsubst-on-templates.sh into
+# /etc/nginx/conf.d/greet.conf, substituting ${GREETING} from the environment.
+server {
+    listen 8081;
+    location / {
+        return 200 "greeting=${GREETING}\n";
+    }
+}

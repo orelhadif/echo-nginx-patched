@@ -1,0 +1,33 @@
+################ nginx:1.25-bookworm
+image id: sha256:a484819eb60211f5299034ac80f6a681b06f89e65866ce91f356ed7c72af059c
+== CVE-2026-27171: zlib package and library in the image
+zlib1g 1:1.2.13.dfsg-1
+lrwxrwxrwx 1 root root     14 Nov  5  2022 /usr/lib/aarch64-linux-gnu/libz.so.1 -> libz.so.1.2.13
+-rw-r--r-- 1 root root 133520 Nov  5  2022 /usr/lib/aarch64-linux-gnu/libz.so.1.2.13
+== CVE-2026-27171: libz mapped into the running nginx master
+/usr/lib/aarch64-linux-gnu/libz.so.1.2.13
+== CVE-2025-23419: SSL_SESSION_get0_hostname in the nginx binaries
+/usr/sbin/nginx: 0 occurrence(s)
+/usr/sbin/nginx-debug: 0 occurrence(s)
+nginx version: nginx/1.25.5
+== CVE-2026-27171: behaviour probe (compiled against this image s zlib)
+zlibVersion() = 1.2.13
+probe: still running after 10s -> killed (infinite loop, VULNERABLE)
+
+################ echo-nginx:1.25-bookworm-patched
+image id: sha256:37d33a2bdf27d7225ef80f1fa6ef7cd8814fa049e98a2019c863b12e46586a7f
+== CVE-2026-27171: zlib package and library in the image
+zlib1g 1:1.4-0+echo1
+lrwxrwxrwx 1 root root     11 Nov 24 21:06 /usr/lib/aarch64-linux-gnu/libz.so.1 -> libz.so.1.4
+-rw-r--r-- 1 root root 133544 Nov 24 21:06 /usr/lib/aarch64-linux-gnu/libz.so.1.4
+== CVE-2026-27171: libz mapped into the running nginx master
+/usr/lib/aarch64-linux-gnu/libz.so.1.4
+== CVE-2025-23419: SSL_SESSION_get0_hostname in the nginx binaries
+/usr/sbin/nginx: 1 occurrence(s)
+/usr/sbin/nginx-debug: 1 occurrence(s)
+nginx version: nginx/1.25.5
+== CVE-2026-27171: behaviour probe (compiled against this image s zlib)
+zlibVersion() = 1.4
+crc32_combine(len2 = -1) returned 0x0
+probe: returned immediately (FIXED)
+
