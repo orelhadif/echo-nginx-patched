@@ -1,2 +1,4 @@
 # build outputs (reproducible with `make debs`)
 out/
+# exported archive (make it again with: git archive)
+*.zip
