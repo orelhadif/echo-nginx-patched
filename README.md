@@ -408,8 +408,10 @@ rebuild you must rerun `make vex` (`make scan` does it for you).
     says 1.4 is not affected, but we did not verify it in the code, so it is **not** in
     the VEX.
 - **Source integrity.** zlib and nginx are verified by sha256 **and** a pinned GPG
-  fingerprint. pkg-oss, njs and QuickJS are GitHub archives and are pinned by sha256 only,
-  because no signature exists.
+  fingerprint. pkg-oss and njs are GitHub archives and are pinned by sha256 only, because
+  no signature exists. QuickJS is pinned by git commit hash (checked by pkg-oss).
+  The zlib signing key is DSA-1024 from 2001, which is weak by today's standards; the
+  pinned sha256 is what really protects that download.
 - **The fix for CVE-2025-23419 was not exercised behaviourally.** We prove the patch is
   applied and compiled in (an unmodified upstream diff, a source grep and a binary import).
   We did not run a TLS 1.3 cross-SNI resumption test against both images.
