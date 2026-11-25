@@ -65,7 +65,7 @@ build/
   build-zlib.sh             zlib 1.4 -> zlib1g + zlib1g-dev .debs
   build-nginx.sh            nginx.org's packaging recipe (pkg-oss) + our patch -> nginx + 4 module .debs
   patches/CVE-2025-23419.patch   the backport, with a provenance header
-  Dockerfile.build          the clean, single-command build environment
+  Dockerfile                the clean, single-command build environment
 Containerfile               the final image (mirrors the official Dockerfile)
 docker-entrypoint/          the official entrypoint scripts, byte-identical
 test/
@@ -221,7 +221,7 @@ byte-identical.
 ## 6. Build artifact
 
 **One reproducible command:** `make debs` (or `make test` for everything). It runs
-[build/Dockerfile.build](build/Dockerfile.build):
+[build/Dockerfile](build/Dockerfile):
 
 ```
 debian:bookworm-slim@sha256:e67eeead…  (pinned)

@@ -1,7 +1,7 @@
 # Builder: produces our .deb files from upstream source inside a clean
 # debian:bookworm-slim. Nothing pre-built is copied in - only our scripts,
 # patches and pinned public keys. Output is exported with
-#   docker build -f build/Dockerfile.build --output type=local,dest=out build/
+#   docker build -f build/Dockerfile --target export --output type=local,dest=out build/
 #
 # Base pinned by digest (debian:bookworm-slim, Debian 12.15, 2026-11-24) so the
 # toolchain does not drift between runs.

@@ -14,7 +14,7 @@ all: test
 ## Build all .deb files from upstream source inside a clean bookworm-slim.
 debs:
 	DOCKER_BUILDKIT=1 $(DOCKER) build --progress=plain \
-	    -f build/Dockerfile.build --target export \
+	    -f build/Dockerfile --target export \
 	    --output type=local,dest=$(OUT) build/
 
 ## Build the final image from those .debs.
