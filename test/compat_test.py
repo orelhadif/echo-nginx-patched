@@ -19,6 +19,7 @@ Exit code: 0 if everything matches, 1 on any difference.
 Python 3.9+, standard library only. Needs `docker` on PATH.
 """
 import argparse
+import collections
 import hashlib
 import os
 import random
@@ -52,11 +53,20 @@ def req(method, path, headers=(), body=b"", version="HTTP/1.1", host="localhost"
     return ("\r\n".join(lines) + "\r\n\r\n").encode() + body
 
 
+# One request, sent as the same raw bytes to both images.
+#   set:  which container setup it runs in (see container_args)
+#   port: container port; tls: None, "tls" or "mtls" (with a client certificate)
+Scenario = collections.namedtuple("Scenario", "set name port tls raw")
+SETS = ["default", "custom", "njs", "templates"]
+
+
 def scenarios(data):
-    """(set, name, port, tls, raw request). `data` holds generated payloads."""
+    """Every scenario. `data` holds generated payloads."""
     two_mb = b"x" * (2 * 1024 * 1024)
     s = []
-    add = lambda st, name, raw, port=80, tls=None: s.append((st, name, port, tls, raw))
+
+    def add(setname, name, raw, port=80, tls=None):
+        s.append(Scenario(setname, name, port, tls, raw))
 
     # -- root / default configuration ----------------------------------------
     add("default", "GET / (root)", req("GET", "/"))
@@ -231,17 +241,23 @@ def make_fixtures(work, orig_image):
             f.write("line %06d: the quick brown fox jumps over the lazy dog %d\n" % (i, rnd.randint(0, 9)))
     certs = os.path.join(work, "certs")
     os.makedirs(certs)
-    # test CA, server cert (a.test) and client cert - made with openssl from
-    # the original image so the host needs nothing but docker + python
-    script = r"""set -e; cd /c
-openssl req -x509 -newkey rsa:2048 -nodes -days 2 -subj "/CN=Compat Test CA" -keyout ca.key -out ca.crt 2>/dev/null
-openssl req -newkey rsa:2048 -nodes -subj "/CN=a.test" -keyout server.key -out server.csr 2>/dev/null
-printf 'subjectAltName=DNS:a.test,DNS:b.test\n' > san.ext
-openssl x509 -req -in server.csr -CA ca.crt -CAkey ca.key -CAcreateserial -days 2 -extfile san.ext -out server.crt 2>/dev/null
-openssl req -newkey rsa:2048 -nodes -subj "/O=Compat Test/CN=client.test" -keyout client.key -out client.csr 2>/dev/null
-openssl x509 -req -in client.csr -CA ca.crt -CAkey ca.key -CAcreateserial -days 2 -out client.crt 2>/dev/null
-chmod 644 *"""
-    docker("run", "--rm", "-v", certs + ":/c", "--entrypoint", "sh", orig_image, "-c", script)
+    # Test CA, server cert (a.test) and client cert, made with openssl from the
+    # original image, so the host needs nothing but docker + python.
+    with open(os.path.join(certs, "san.ext"), "w") as f:
+        f.write("subjectAltName=DNS:a.test,DNS:b.test\n")
+
+    def openssl(*args):
+        docker("run", "--rm", "-v", certs + ":/c", "-w", "/c", "--entrypoint", "openssl", orig_image, *args)
+    openssl("req", "-x509", "-newkey", "rsa:2048", "-nodes", "-days", "2", "-subj", "/CN=Compat Test CA",
+            "-keyout", "ca.key", "-out", "ca.crt")
+    openssl("req", "-newkey", "rsa:2048", "-nodes", "-subj", "/CN=a.test",
+            "-keyout", "server.key", "-out", "server.csr")
+    openssl("x509", "-req", "-in", "server.csr", "-CA", "ca.crt", "-CAkey", "ca.key", "-CAcreateserial",
+            "-days", "2", "-extfile", "san.ext", "-out", "server.crt")
+    openssl("req", "-newkey", "rsa:2048", "-nodes", "-subj", "/O=Compat Test/CN=client.test",
+            "-keyout", "client.key", "-out", "client.csr")
+    openssl("x509", "-req", "-in", "client.csr", "-CA", "ca.crt", "-CAkey", "ca.key", "-CAcreateserial",
+            "-days", "2", "-out", "client.crt")
     for d in (work, os.path.join(work, "data"), certs):
         os.chmod(d, 0o755)
     for root, _, files in os.walk(work):
@@ -249,6 +265,47 @@ chmod 644 *"""
             os.chmod(os.path.join(root, f), 0o644)
     with open(os.path.join(work, "data", "big.bin"), "rb") as f:
         return {"upload": f.read()}
+
+
+def compare_set(setname, images, all_scenarios, ctx, work, verbose, containers):
+    """Start both images in one setup, compare the start-up log and every scenario.
+    Returns the list of differences."""
+    print("\n== scenario set: %s" % setname)
+    failures = []
+    running = {}
+    for label, image in images:
+        cid, ports = start(image, setname, work)
+        containers.append(cid)
+        running[label] = (cid, ports)
+
+    logs = {label: entrypoint_log(cid) for label, (cid, _) in running.items()}
+    ok = logs["orig"] == logs["new"]
+    print("  %-4s entrypoint start-up log (%d lines)" % ("ok" if ok else "DIFF", len(logs["orig"])))
+    if not ok:
+        failures.append("%s: entrypoint log" % setname)
+        print("       orig: %s\n       new:  %s" % (logs["orig"], logs["new"]))
+
+    for sc in all_scenarios:
+        if sc.set != setname:
+            continue
+        res = {}
+        for label, (cid, ports) in running.items():
+            resp, err = exchange(ports[sc.port], sc.raw, ctx[sc.tls])
+            res[label] = describe(resp, err)
+        o, n = res["orig"], res["new"]
+        diffs = [k for k in ("status", "headers", "body", "error") if o[k] != n[k]]
+        print("  %-4s %-42s %s" % ("ok" if not diffs else "DIFF", sc.name, o["status"] or o["error"]))
+        for k in ("status", "headers", "body", "error"):
+            if k in diffs:
+                print("       %s orig: %s\n       %s new:  %s" % (k, o[k], k, n[k]))
+            elif verbose:
+                print("       %s: %s" % (k, o[k]))
+        if diffs:
+            failures.append("%s: %s (%s)" % (setname, sc.name, ",".join(diffs)))
+
+    for cid, _ in running.values():
+        docker("stop", "-t", "2", cid, check=False)
+    return failures
 
 
 def main():
@@ -260,54 +317,20 @@ def main():
 
     # Docker Desktop on macOS shares /private/var/folders, so a temp dir works
     work = os.path.realpath(tempfile.mkdtemp(prefix="compat-"))
-    containers = []
-    failures = []
+    containers, failures = [], []
     try:
         data = make_fixtures(work, a.orig)
         ctx = {"tls": tls_context(work, False), "mtls": tls_context(work, True), None: None}
-        all_s = scenarios(data)
-        for setname in ["default", "custom", "njs", "templates"]:
-            print("\n== scenario set: %s" % setname)
-            running = {}
-            for label, image in (("orig", a.orig), ("new", a.new)):
-                cid, ports = start(image, setname, work)
-                containers.append(cid)
-                running[label] = (cid, ports)
-
-            logs = {l: entrypoint_log(c) for l, (c, _) in running.items()}
-            ok = logs["orig"] == logs["new"]
-            print("  %-4s entrypoint start-up log (%d lines)" % ("ok" if ok else "DIFF", len(logs["orig"])))
-            if not ok:
-                failures.append("%s: entrypoint log" % setname)
-                print("       orig: %s\n       new:  %s" % (logs["orig"], logs["new"]))
-
-            for st, name, port, tls, raw in all_s:
-                if st != setname:
-                    continue
-                res = {}
-                for label, (cid, ports) in running.items():
-                    resp, err = exchange(ports[port], raw, ctx[tls])
-                    res[label] = describe(resp, err)
-                o, n = res["orig"], res["new"]
-                diffs = [k for k in ("status", "headers", "body", "error") if o[k] != n[k]]
-                print("  %-4s %-42s %s" % ("ok" if not diffs else "DIFF", name, o["status"] or o["error"]))
-                if a.verbose or diffs:
-                    for k in ("status", "headers", "body", "error"):
-                        if k in diffs:
-                            print("       %s orig: %s\n       %s new:  %s" % (k, o[k], k, n[k]))
-                        elif a.verbose:
-                            print("       %s: %s" % (k, o[k]))
-                if diffs:
-                    failures.append("%s: %s (%s)" % (setname, name, ",".join(diffs)))
-
-            for cid, _ in running.values():
-                docker("stop", "-t", "2", cid, check=False)
+        all_scenarios = scenarios(data)
+        for setname in SETS:
+            failures += compare_set(setname, (("orig", a.orig), ("new", a.new)),
+                                    all_scenarios, ctx, work, a.verbose, containers)
     finally:
         for cid in containers:
             docker("container", "rm", "-f", cid, check=False)
         shutil.rmtree(work, ignore_errors=True)
 
-    total = len(scenarios({"upload": b""})) + 4   # + 4 entrypoint log checks
+    total = len(all_scenarios) + len(SETS)   # + one entrypoint-log check per set
     print("\nRESULT: %s" % ("PASS (%d checks, all identical)" % total if not failures
                             else "FAIL (%d of %d differ):\n  - %s" % (len(failures), total, "\n  - ".join(failures))))
     return 1 if failures else 0

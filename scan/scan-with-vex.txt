@@ -2,58 +2,67 @@
   trivy
     CVE-2026-27171  REPORTED on zlib1g
     CVE-2025-23419  not reported
-    total findings: 589
+    CVE-2026-42945  not reported
+    total findings: 585
   grype
     CVE-2026-27171  REPORTED on zlib1g
     CVE-2025-23419  not reported
-    total findings: 530
+    CVE-2026-42945  not reported
+    total findings: 527
 == echo-nginx:1.25-bookworm-patched WITH vex/echo-nginx.openvex.json
   trivy
     CVE-2026-27171  not reported
     CVE-2025-23419  not reported
-    total findings: 588
+    CVE-2026-42945  not reported
+    total findings: 584
   grype
     CVE-2026-27171  not reported
     CVE-2025-23419  not reported
-    total findings: 529
+    CVE-2026-42945  not reported
+    total findings: 526
 == nginx:1.25-bookworm without VEX
   trivy
     CVE-2026-27171  REPORTED on zlib1g
     CVE-2025-23419  not reported
-    total findings: 960
+    CVE-2026-42945  not reported
+    total findings: 956
   grype
     CVE-2026-27171  REPORTED on zlib1g
     CVE-2025-23419  not reported
-    total findings: 892
+    CVE-2026-42945  not reported
+    total findings: 889
 == nginx:1.25-bookworm WITH vex/echo-nginx.openvex.json
   trivy
     CVE-2026-27171  REPORTED on zlib1g
     CVE-2025-23419  not reported
-    total findings: 960
+    CVE-2026-42945  not reported
+    total findings: 956
   grype
     CVE-2026-27171  REPORTED on zlib1g
     CVE-2025-23419  not reported
-    total findings: 892
+    CVE-2026-42945  not reported
+    total findings: 889
 == CPE scan of vex/upstream-components.cdx.json without VEX
   grype
     CVE-2026-27171  not reported
     CVE-2025-23419  REPORTED on nginx
+    CVE-2026-42945  REPORTED on nginx
     total findings: 29
 == CPE scan of vex/upstream-components.cdx.json WITH vex/echo-nginx.openvex.json
   grype
     CVE-2026-27171  not reported
     CVE-2025-23419  not reported
-    total findings: 28
+    CVE-2026-42945  not reported
+    total findings: 27
 
 == Upstream nginx/zlib CVEs still open (CPE scan WITH VEX): residual risk
 NAME   INSTALLED  FIXED IN         TYPE            VULNERABILITY    SEVERITY  EPSS          RISK  
-nginx  1.25.5     1.30.1           UnknownPackage  CVE-2026-42945   High      69.4% (99th)  55.4  
-nginx  1.25.5     *1.30.7, 1.31.9  UnknownPackage  CVE-2026-123007  Critical  27.8% (98th)  24.5  
+nginx  1.25.5     *1.30.7, 1.31.9  UnknownPackage  CVE-2026-123007  Critical  44.7% (98th)  39.4  
 nginx  1.25.5     *1.28.3, 1.29.7  UnknownPackage  CVE-2026-27654   High      27.6% (98th)  21.9  
-nginx  1.25.5     *1.30.7, 1.31.9  UnknownPackage  CVE-2026-123633  Critical  17.5% (97th)  15.5  
-nginx  1.25.5     *1.30.7, 1.31.9  UnknownPackage  CVE-2026-123634  Critical  17.1% (97th)  15.1  
-nginx  1.25.5     *1.30.7, 1.31.9  UnknownPackage  CVE-2026-121810  Critical  16.4% (97th)  14.5  
-nginx  1.25.5     *1.30.7, 1.31.9  UnknownPackage  CVE-2026-113425  Critical  13.9% (96th)  12.2  
+nginx  1.25.5     *1.30.7, 1.31.9  UnknownPackage  CVE-2026-123633  Critical  22.1% (97th)  19.5  
+nginx  1.25.5     *1.30.7, 1.31.9  UnknownPackage  CVE-2026-123634  Critical  18.8% (97th)  16.6  
+nginx  1.25.5     *1.30.7, 1.31.9  UnknownPackage  CVE-2026-121810  Critical  18.1% (97th)  16.0  
+nginx  1.25.5     *1.30.7, 1.31.9  UnknownPackage  CVE-2026-113425  Critical  15.3% (96th)  13.5  
 nginx  1.25.5     *1.30.4, 1.31.3  UnknownPackage  CVE-2026-42533   Critical  6.5% (93rd)   5.8   
 nginx  1.25.5     *1.30.6, 1.31.7  UnknownPackage  CVE-2026-15176   Critical  1.0% (63rd)   0.9   
 nginx  1.25.5     *1.28.3, 1.29.7  UnknownPackage  CVE-2026-27651   High      1.0% (64th)   0.8   
@@ -66,12 +75,12 @@ nginx  1.25.5     1.26.1           UnknownPackage  CVE-2024-35200   Medium    0.
 nginx  1.25.5     1.26.1           UnknownPackage  CVE-2024-34161   Medium    0.9% (59th)   0.4   
 nginx  1.25.5     1.26.1           UnknownPackage  CVE-2024-31079   Medium    0.9% (60th)   0.4   
 nginx  1.25.5     1.30.1           UnknownPackage  CVE-2026-42934   Medium    0.7% (55th)   0.4   
-nginx  1.25.5     *1.30.4, 1.31.3  UnknownPackage  CVE-2026-56434   High      0.5% (44th)   0.4   
+nginx  1.25.5     *1.30.4, 1.31.3  UnknownPackage  CVE-2026-56434   High      0.5% (43rd)   0.4   
 nginx  1.25.5     1.30.1           UnknownPackage  CVE-2026-40701   Medium    0.7% (53rd)   0.4   
 nginx  1.25.5     *1.30.3, 1.31.2  UnknownPackage  CVE-2026-48142   Medium    0.7% (53rd)   0.4   
 nginx  1.25.5     1.29.5           UnknownPackage  CVE-2026-1642    High      0.4% (32nd)   0.3   
 nginx  1.25.5     *1.30.6, 1.31.7  UnknownPackage  CVE-2026-97629   Medium    0.4% (35th)   0.2   
-nginx  1.25.5     1.29.1           UnknownPackage  CVE-2025-53859   Medium    0.5% (40th)   0.2   
+nginx  1.25.5     1.29.1           UnknownPackage  CVE-2025-53859   Medium    0.5% (39th)   0.2   
 nginx  1.25.5     *1.30.6, 1.31.7  UnknownPackage  CVE-2026-95101   Medium    0.3% (28th)   0.2   
 nginx  1.25.5     *1.26.2, 1.27.1  UnknownPackage  CVE-2024-7347    Medium    0.3% (25th)   0.2   
-nginx  1.25.5     *1.28.3, 1.29.7  UnknownPackage  CVE-2026-28753   Medium    0.3% (23rd)   0.1
+nginx  1.25.5     *1.28.3, 1.29.7  UnknownPackage  CVE-2026-28753   Medium    0.3% (22nd)   0.1

@@ -1,4 +1,4 @@
-# Baseline image identity (scanned 2026-11-24)
+# Baseline image identity (first scanned 2026-11-24; reports refreshed by `make scan`)
 tag:            nginx:1.25-bookworm
 index digest:   sha256:a484819eb60211f5299034ac80f6a681b06f89e65866ce91f356ed7c72af059c
 platform:       linux/arm64 (manifest sha256:557b2c07439ee9e53cb178e3bdbb87114b31c48a41a17c8750c5908d65adeec6)
@@ -8,4 +8,6 @@ source:         github.com/nginxinc/docker-nginx@9abe4ae472b3332665fad9b12ee146d
 nginx:          1.25.5-1~bookworm (nginx.org repo); built with OpenSSL 3.0.9, running with 3.0.11
 config:         Entrypoint ["/docker-entrypoint.sh"] Cmd ["nginx","-g","daemon off;"] Expose 80/tcp
                 StopSignal SIGQUIT  User "" (root, workers as nginx)  WorkingDir "" (/)
-scanners:       trivy 0.76.2 (DB 2026-11-24 07:08 UTC), grype 0.122.1 (DB v6.1.10 built 2026-11-24 06:22 UTC)
+scanners:       trivy 0.76.2, grype 0.122.1; trivy.json/grype.json are rescanned by `make scan`
+                with the same DB as the new image (last run: trivy DB 2026-11-25 13:07 UTC,
+                grype DB v6.1.10 built 2026-11-25 06:22 UTC)

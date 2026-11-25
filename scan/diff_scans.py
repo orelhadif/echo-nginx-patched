@@ -5,7 +5,7 @@ Usage: diff_scans.py BASE_TRIVY BASE_GRYPE NEW_TRIVY NEW_GRYPE [--focus CVE ...]
 
 A finding is the pair (CVE id, package name). We report, per scanner, what
 disappeared, what appeared and what stayed, and print every finding for the
---focus CVEs (the two we fixed) in both images. Python 3.9+, stdlib only.
+--focus CVEs (the ones we fixed) in both images. Python 3.9+, stdlib only.
 """
 import argparse
 import collections
@@ -33,6 +33,14 @@ def grype(path):
     return out
 
 
+def by_severity(keys, findings):
+    return dict(collections.Counter(findings[k]["severity"] for k in keys))
+
+
+def top_packages(keys):
+    return ", ".join("%s(%d)" % kv for kv in collections.Counter(k[1] for k in keys).most_common(12))
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("base_trivy"), ap.add_argument("base_grype")
@@ -40,28 +48,25 @@ def main():
     ap.add_argument("--focus", nargs="*", default=[])
     a = ap.parse_args()
 
-    for name, load, bp, np_ in (("Trivy", trivy, a.base_trivy, a.new_trivy),
-                                ("Grype", grype, a.base_grype, a.new_grype)):
-        b, n = load(bp), load(np_)
-        gone, new, kept = set(b) - set(n), set(n) - set(b), set(b) & set(n)
-        sev = lambda keys, src: dict(collections.Counter(src[k]["severity"] for k in keys))
-        print("== %s" % name)
-        print("  baseline: %4d findings, %4d unique CVEs" % (len(b), len({k[0] for k in b})))
-        print("  new:      %4d findings, %4d unique CVEs" % (len(n), len({k[0] for k in n})))
-        print("  disappeared: %4d  by severity %s" % (len(gone), sev(gone, b)))
-        print("  appeared:    %4d  by severity %s" % (len(new), sev(new, n)))
+    for scanner, load, base_path, new_path in (("Trivy", trivy, a.base_trivy, a.new_trivy),
+                                               ("Grype", grype, a.base_grype, a.new_grype)):
+        base, new = load(base_path), load(new_path)
+        gone, appeared, kept = set(base) - set(new), set(new) - set(base), set(base) & set(new)
+        print("== %s" % scanner)
+        print("  baseline: %4d findings, %4d unique CVEs" % (len(base), len({k[0] for k in base})))
+        print("  new:      %4d findings, %4d unique CVEs" % (len(new), len({k[0] for k in new})))
+        print("  disappeared: %4d  by severity %s" % (len(gone), by_severity(gone, base)))
+        print("  appeared:    %4d  by severity %s" % (len(appeared), by_severity(appeared, new)))
         print("  unchanged:   %4d" % len(kept))
-        gone_pkgs = collections.Counter(k[1] for k in gone)
-        print("  disappeared, by package: %s" % ", ".join("%s(%d)" % kv for kv in gone_pkgs.most_common(12)))
-        new_pkgs = collections.Counter(k[1] for k in new)
-        print("  appeared, by package:    %s" % ", ".join("%s(%d)" % kv for kv in new_pkgs.most_common(12)))
+        print("  disappeared, by package: %s" % top_packages(gone))
+        print("  appeared, by package:    %s" % top_packages(appeared))
         for cve in a.focus:
-            for label, src in (("baseline", b), ("new", n)):
-                hits = {k[1]: v for k, v in src.items() if k[0] == cve}
+            for label, findings in (("baseline", base), ("new", new)):
+                hits = {pkg: v for (c, pkg), v in findings.items() if c == cve}
                 print("  %-16s %-8s %s" % (cve, label, "; ".join(
-                    "%s %s [%s, %s%s]" % (p, v["version"], v["severity"], v["status"],
+                    "%s %s [%s, %s%s]" % (pkg, v["version"], v["severity"], v["status"],
                                           ", fixed " + v["fixed"] if v["fixed"] else "")
-                    for p, v in sorted(hits.items())) or "not reported"))
+                    for pkg, v in sorted(hits.items())) or "not reported"))
         print()
 
 

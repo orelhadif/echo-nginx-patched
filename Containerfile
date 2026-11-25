@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 #
 # Drop-in replacement for nginx:1.25-bookworm, built from OUR .deb packages
-# (make debs -> out/). Mirrors the official Dockerfile
+# (build/Dockerfile -> out/, run by `make test`). Mirrors the official Dockerfile
 # (nginxinc/docker-nginx@9abe4ae, mainline/debian) step by step; the only
 # intended difference is where the packages come from:
 #   official: apt repo nginx.org          ours: out/*.deb built from source

@@ -1,4 +1,6 @@
-# build outputs (reproducible with `make debs`)
+# build outputs (reproducible with `make test`)
 out/
 # exported archive (make it again with: git archive)
 *.zip
+# macOS Finder metadata
+.DS_Store

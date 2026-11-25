@@ -2,14 +2,15 @@
 """Generate the targeted VEX (OpenVEX) and an upstream-components SBOM for OUR image.
 
 Why two files:
-  * echo-nginx.openvex.json - says "CVE-2026-27171 and CVE-2025-23419 are fixed"
+  * echo-nginx.openvex.json - says "CVE-2026-27171, CVE-2025-23419 and CVE-2026-42945
+    are fixed"
     for exactly one artifact: our image digest and our exact package versions
     (+echo1). It does not touch any other image, any other version, or any other CVE.
   * upstream-components.cdx.json - a CycloneDX SBOM naming the upstream projects
     inside the image by CPE (f5:nginx 1.25.5, zlib:zlib 1.4). Debian-tracker based
     package matching never reports CVE-2025-23419 on this image (see
     scan/diff-vs-baseline.txt), so without this SBOM there is no finding for the
-    VEX to act on; with it, Grype reports the CVE the way NVD sees nginx 1.25.5.
+    VEX to act on; with it, Grype reports the CVEs the way NVD sees nginx 1.25.5.
 
 Digest and versions are read from the image itself, so after a rebuild just rerun:
     python3 vex/make_vex.py [IMAGE]
@@ -72,7 +73,7 @@ statements = [
         "status": "fixed",
         "status_notes": (
             "Fixed by a version bump: zlib1g %s is upstream zlib 1.4 built from the "
-            "signed release tarball (build/build-zlib.sh, pins in build/versions.env); "
+            "release tarball pinned by sha256 (build/Dockerfile, part 1); "
             "1.4 returns 0 for len2 < 0. Scanners still match the Debian tracker entry "
             "for source package 'zlib', which has no fixed version, so every version is "
             "flagged. Evidence from the image itself: vex/evidence.txt (nginx maps "
@@ -95,12 +96,33 @@ statements = [
         "status_notes": (
             "Fixed by backporting upstream commit 13935cf9fdc3c8d8278c70716417d3b71c36140e "
             "(released in 1.27.4/1.26.3) unmodified onto 1.25.5: "
-            "build/patches/CVE-2025-23419.patch, applied with --fuzz=0 by "
-            "build/build-nginx.sh. The version string stays 1.25.5, so version-based "
-            "matching (CPE) still reports it. Evidence from the image itself: "
-            "vex/evidence.txt (/usr/sbin/nginx and nginx-debug reference "
+            "build/patches/CVE-2025-23419.patch, applied with fuzz 0 by the nginx.org "
+            "packaging (build/Dockerfile, part 2). The version string stays 1.25.5, so "
+            "version-based matching (CPE) still reports it. Evidence from the image "
+            "itself: vex/evidence.txt (/usr/sbin/nginx and nginx-debug reference "
             "SSL_SESSION_get0_hostname, the function the fix adds; the original binaries "
-            "do not)."),
+            "do not). Attack test: test/cve_test.py (rejected in http and stream)."),
+    },
+    {
+        "vulnerability": {
+            "name": "CVE-2026-42945",
+            "description": "nginx: rewrite module escapes a later regex capture into a buffer sized for the unescaped value (heap buffer overrun)",
+        },
+        "products": [
+            {"@id": image_purl,
+             "subcomponents": [{"@id": p} for p in deb_purls("nginx", ver["nginx"]) + [nginx_generic]]},
+            {"@id": nginx_generic},
+        ],
+        "status": "fixed",
+        "status_notes": (
+            "Fixed by backporting upstream commit 524977e7c534e87e5b55739fa74601c9f1102686 "
+            "(released in 1.30.1) unmodified onto 1.25.5: "
+            "build/patches/CVE-2026-42945.patch, applied with fuzz 0 by the nginx.org "
+            "packaging (build/Dockerfile, part 2). The version string stays 1.25.5, so "
+            "version-based matching (CPE) still reports it. Evidence from the image "
+            "itself: vex/evidence.txt (the upstream commit's example config returns the "
+            "capture escaped and truncated on the original image, unchanged on ours). "
+            "Attack test: test/cve_test.py."),
     },
 ]
 
@@ -130,7 +152,7 @@ sbom = {
         {"type": "application", "name": "nginx", "version": "1.25.5",
          "cpe": "cpe:2.3:a:f5:nginx:1.25.5:*:*:*:*:*:*:*",
          "purl": nginx_generic, "bom-ref": nginx_generic,
-         "description": "nginx 1.25.5 + backport of CVE-2025-23419 (deb %s, %s)" % (ver["nginx"], distro)},
+         "description": "nginx 1.25.5 + backports of CVE-2025-23419 and CVE-2026-42945 (deb %s, %s)" % (ver["nginx"], distro)},
         {"type": "library", "name": "zlib", "version": "1.4",
          "cpe": "cpe:2.3:a:zlib:zlib:1.4:*:*:*:*:*:*:*",
          "purl": "pkg:generic/zlib@1.4", "bom-ref": "pkg:generic/zlib@1.4",

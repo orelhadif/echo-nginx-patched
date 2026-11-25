@@ -1,0 +1,14 @@
+Package: zlib1g-dev
+Source: zlib
+Version: @VERSION@
+Architecture: @ARCH@
+Maintainer: Echo home assignment build <build@localhost>
+Installed-Size: @SIZE@
+Depends: zlib1g (= @VERSION@), libc6-dev | libc-dev
+Provides: libz-dev
+Multi-Arch: same
+Section: libdevel
+Priority: optional
+Homepage: https://zlib.net/
+Description: compression library - development (upstream 1.4 rebuild)
+ Headers and static library for zlib 1.4.
