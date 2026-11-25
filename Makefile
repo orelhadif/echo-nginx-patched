@@ -6,7 +6,7 @@ ORIG   ?= nginx:1.25-bookworm
 IMAGE  ?= echo-nginx:1.25-bookworm-patched
 PYTHON ?= python3
 
-.PHONY: all debs image test test-structure test-compat vex scan clean
+.PHONY: all debs image test test-structure test-compat test-cve vex scan clean
 
 ## Everything: packages -> image -> tests.
 all: test
@@ -21,8 +21,8 @@ debs:
 image: debs
 	DOCKER_BUILDKIT=1 $(DOCKER) build -f Containerfile -t $(IMAGE) .
 
-## Compare against the original image: structure, then HTTP behaviour.
-test: image test-structure test-compat
+## Compare against the original image: structure, HTTP behaviour, then the CVE-2025-23419 attack.
+test: image test-structure test-compat test-cve
 
 test-structure:
 	$(DOCKER) image inspect $(ORIG) >/dev/null 2>&1 || $(DOCKER) pull $(ORIG)
@@ -31,6 +31,12 @@ test-structure:
 test-compat:
 	$(DOCKER) image inspect $(ORIG) >/dev/null 2>&1 || $(DOCKER) pull $(ORIG)
 	$(PYTHON) test/compat_test.py --orig $(ORIG) --new $(IMAGE)
+
+## Run the CVE-2025-23419 attack (TLS 1.3 cross-SNI resumption) against both
+## images: the original must be exploitable, ours must reject it.
+test-cve:
+	$(DOCKER) image inspect $(ORIG) >/dev/null 2>&1 || $(DOCKER) pull $(ORIG)
+	test/cve_2025_23419_test.sh $(ORIG) $(IMAGE)
 
 ## Bonus. Run after `make test` (they use the image it built, without rebuilding).
 ## Evidence from both images + VEX pinned to the CURRENT image digest. Rerun after

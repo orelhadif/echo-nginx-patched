@@ -14,7 +14,7 @@ Every package that changes is built from source into a `.deb` inside a clean
 files exactly the way the official Dockerfile installs nginx.org's packages.
 
 ```bash
-make test      # build the .debs -> build the image -> structural test -> HTTP compat test
+make test      # build the .debs -> build the image -> structural test -> HTTP compat test -> CVE attack test
 ```
 
 ---
@@ -46,9 +46,10 @@ Everything else runs inside containers.
 |---|---|
 | `make debs` | Builds all `.deb` files from source in `debian:bookworm-slim` and writes them to `out/` |
 | `make image` | `make debs`, then builds `echo-nginx:1.25-bookworm-patched` from `Containerfile` |
-| `make test` | `make image`, then `test-structure` and `test-compat`. Exits non-zero on any difference |
+| `make test` | `make image`, then `test-structure`, `test-compat` and `test-cve`. Exits non-zero on any difference |
 | `make test-structure` | Only `test/compare_image.py`, the image config and filesystem comparison |
 | `make test-compat` | Only `test/compat_test.py`, the HTTP behaviour comparison |
+| `make test-cve` | Only `test/cve_2025_23419_test.sh`, the CVE-2025-23419 attack against both images |
 | `make clean` | Removes `out/` |
 | `make vex` | Bonus, after `make test`. Collects the evidence from both images (`vex/evidence.txt`) and regenerates the VEX and the upstream SBOM for the **current** image digest |
 | `make scan` | Bonus. Runs `make vex`, then rescans with Trivy and Grype, diffs against `scan/baseline/`, and scans both images with and without the VEX |
@@ -71,6 +72,7 @@ docker-entrypoint/          the official entrypoint scripts, byte-identical
 test/
   compare_image.py          structural drop-in test
   compat_test.py            HTTP behaviour drop-in test
+  cve_2025_23419_test.sh    the CVE-2025-23419 attack: original exploitable, ours rejects it
   fixtures/                 custom config, njs script, envsubst template
 Makefile
 scan/
@@ -213,6 +215,23 @@ The steps, in order:
    `nm -D` shows that the built `nginx` and `nginx-debug` import
    `SSL_SESSION_get0_hostname@OPENSSL_3.0.0`. The original binaries never import that
    function.
+5. **Behavioural proof** ([test/cve_2025_23419_test.sh](test/cve_2025_23419_test.sh),
+   `make test-cve`). One nginx, two TLS 1.3 servers on one port: `a.test` (default)
+   requires a client cert from CA A, `b.test` one from CA B. The client authenticates
+   to `a.test`, keeps the session, then resumes it with SNI `b.test` and **no** cert.
+   This runs twice: in `http` (port 443) and in `stream` (port 8443), because the
+   upstream commit fixes both modules in two separate functions. Results are the same
+   for both modules:
+
+   | Check | Original | New |
+   |---|---|---|
+   | Resume `a.test` → `a.test` (control) | served, reused | served, reused |
+   | `b.test` with a CA-B cert (control) | served | served |
+   | **Resume `a.test` session → `b.test`, no cert (attack)** | **served `b.test`** | **rejected, `access_denied`** |
+
+   The attack succeeds on the original image, so the test can detect the bug. Our
+   nginx logs `handshake rejected`. The client is the original image's `openssl` in
+   both runs, so only the server differs.
 
 `nginx -V` of the two images is identical except for the compiler and OpenSSL version
 lines: our base is a newer Debian 12 point release. Configure arguments and paths are
@@ -317,6 +336,7 @@ exited 1 and reported `Content-Length`, `ETag` and body differences. The test ca
 so a PASS means something.
 
 **Result:** `make test` exits 0. Structure: PASS. Compat: `PASS (40 checks, all identical)`.
+CVE test: the original is exploitable, ours rejects the attack (section 5, step 5).
 
 ## 8. Rescan, evidence and VEX (bonus)
 
@@ -352,7 +372,8 @@ The evidence is collected from **the images themselves**, not from build logs:
 | `crc32_combine(…, len2 = -1)`, compiled in the image against its own zlib | never returns (killed after 10 s) | returns `0x0` immediately |
 | `SSL_SESSION_get0_hostname` in `/usr/sbin/nginx`, `nginx-debug` | 0, 0 | 1, 1 |
 
-This is not an exploit. The zlib probe calls the public API with a negative length.
+The zlib probe is not an exploit: it calls the public API with a negative length. For
+nginx, the actual attack is run by `make test-cve` (section 5, step 5).
 
 ### Targeted VEX ([vex/echo-nginx.openvex.json](vex/echo-nginx.openvex.json))
 
@@ -412,9 +433,6 @@ rebuild you must rerun `make vex` (`make scan` does it for you).
   no signature exists. QuickJS is pinned by git commit hash (checked by pkg-oss).
   The zlib signing key is DSA-1024 from 2001, which is weak by today's standards; the
   pinned sha256 is what really protects that download.
-- **The fix for CVE-2025-23419 was not exercised behaviourally.** We prove the patch is
-  applied and compiled in (an unmodified upstream diff, a source grep and a binary import).
-  We did not run a TLS 1.3 cross-SNI resumption test against both images.
 - **Only arm64 was built and tested.** The build scripts are architecture-neutral
   (`dpkg-architecture`, `$arch` in the Containerfile), but amd64 was not run.
 - **`/etc/apt/keyrings/nginx-archive-keyring.gpg` is absent.** A downstream Dockerfile
@@ -453,9 +471,6 @@ rebuild you must rerun `make vex` (`make scan` does it for you).
 - **For zlib, consider the Debian source package plus a targeted patch** (a backport) next
   to the version bump. That is a smaller change for a shared library. We chose the bump
   because the assignment asks for one bump and one backport, and 1.4 is the upstream fix.
-- **Add a TLS 1.3 cross-SNI resumption regression test.** We would run it against both
-  images with a shared session cache and `ssl_verify_client`. It would prove the backport
-  behaviourally, not only by its presence.
 - **Build amd64 and arm64 in CI** (buildx multi-platform) and run the same tests on both.
 - **Make the build bit-for-bit reproducible.** That means `SOURCE_DATE_EPOCH` and
   normalized archive metadata, and building twice to compare `.deb` hashes. Today the
@@ -498,6 +513,10 @@ what goes into the VEX. Nothing was published or committed without my explicit d
       `crc32_combine(len2 = -1)` returns 0, while 1.2.13 hangs.
 - [x] The backport is byte-identical to upstream and applies with `--fuzz=0`. Both nginx
       binaries contain `SSL_SESSION_get0_hostname`; the original binaries do not.
+- [x] The CVE-2025-23419 attack (TLS 1.3 cross-SNI resumption without the second
+      server's client cert) succeeds on the original image and is rejected by ours
+      (`make test-cve`), in both `http` and `stream`, with both controls passing on
+      both images.
 - [x] All 6 dynamic modules load: release modules in `nginx`, debug modules in
       `nginx-debug`.
 - [x] Rescan diff against the baseline uses the same scanner and DB versions.
@@ -507,7 +526,6 @@ what goes into the VEX. Nothing was published or committed without my explicit d
 **Still open:**
 
 - [ ] amd64 build and test.
-- [ ] Behavioural regression test for CVE-2025-23419 (TLS 1.3 cross-SNI resumption).
 - [ ] Bit-for-bit reproducibility check (build twice, compare hashes).
 - [ ] Code-level review of CVE-2026-85091 against zlib 1.4.
 - [ ] The VEX is pinned to the local image digest and must be regenerated after a
