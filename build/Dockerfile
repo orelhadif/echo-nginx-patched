@@ -22,7 +22,6 @@ ARG ZLIB_VERSION=1.4
 # epoch dpkg would consider 1.4 *older*. "+echo1" marks our rebuild.
 ARG ZLIB_DEB_VERSION=1:1.4-0+echo1
 ARG NGINX_VERSION=1.25.5
-ARG VENDOR="Echo home assignment build <build@localhost>"
 
 RUN apt-get update \
  && apt-get install -y --no-install-recommends build-essential dpkg-dev ca-certificates binutils \
@@ -136,16 +135,18 @@ RUN tar xzf /src/pkg-oss-1.25.5-1.tar.gz --strip-components=1 \
  && cp -v /patches/*.patch contrib/src/nginx/
 
 # 2b. Generate the debian/ trees for nginx and the four modules the original ships.
+#     PACKAGE_VENDOR: our name as Maintainer (nginx.org did not build these).
 #     MODULE_RELEASE_njs=3: the original ships nginx-module-njs ...-3~bookworm.
 #     XSLS: points at an existing file so make does not try to download xslscript
 #     from the defunct hg.nginx.org (docs/changes.xslt is already pre-generated).
 WORKDIR /data/builder/debuild/nginx-$NGINX_VERSION/debian
-RUN make PACKAGE_VENDOR="$VENDOR" MODULE_RELEASE_njs=3 XSLS="$PWD/../docs/changes.xsls" \
+ENV DEBFULLNAME="Echo home assignment build" DEBEMAIL=build@localhost
+RUN make PACKAGE_VENDOR="$DEBFULLNAME <$DEBEMAIL>" MODULE_RELEASE_njs=3 XSLS="$PWD/../docs/changes.xsls" \
         rules-base rules-module-geoip rules-module-image-filter rules-module-njs rules-module-xslt
 
 # 2c. In each tree: a changelog entry "+echo1" (the package version comes from
 #     it, e.g. 1.25.5-1~bookworm+echo1), then build the binary packages.
-ENV DEBFULLNAME="Echo home assignment build" DEBEMAIL=build@localhost
+#     dch takes the author from DEBFULLNAME/DEBEMAIL.
 RUN for d in debuild-base debuild-module-geoip debuild-module-image-filter \
              debuild-module-njs debuild-module-xslt; do \
         cd $d/nginx-$NGINX_VERSION \

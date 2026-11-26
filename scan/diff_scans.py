@@ -43,8 +43,8 @@ def top_packages(keys):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("base_trivy"), ap.add_argument("base_grype")
-    ap.add_argument("new_trivy"), ap.add_argument("new_grype")
+    for name in ("base_trivy", "base_grype", "new_trivy", "new_grype"):
+        ap.add_argument(name)
     ap.add_argument("--focus", nargs="*", default=[])
     a = ap.parse_args()
 

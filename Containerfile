@@ -27,8 +27,9 @@ RUN --mount=type=bind,source=out,target=/tmp/debs \
     # the original installs "gnupg1 ca-certificates" to verify nginx.org's key and
     # only removes gnupg1 afterwards, so ca-certificates is part of the image
     && apt-get install --no-install-recommends --no-install-suggests -y ca-certificates \
-    # zlib1g 1.4 (CVE-2026-27171) replaces Debian's 1.2.13; nginx (CVE-2025-23419
-    # backport) + the same four module packages; same extras as the original.
+    # zlib1g 1.4 (CVE-2026-27171) replaces Debian's 1.2.13; nginx with both
+    # backports (CVE-2025-23419, CVE-2026-42945) + the same four module packages;
+    # same extras as the original.
     && apt-get install --no-install-recommends --no-install-suggests -y \
         /tmp/debs/zlib1g_*_"$arch".deb \
         /tmp/debs/nginx_*_"$arch".deb \

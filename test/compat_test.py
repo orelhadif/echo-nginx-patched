@@ -228,7 +228,7 @@ def describe(resp, err):
     status, headers, body = parse(resp)
     return {"status": status, "headers": normalise(headers),
             "body": "%d bytes sha256=%s" % (len(body), hashlib.sha256(body).hexdigest()[:16]),
-            "body_preview": body[:120], "error": err}
+            "error": err}
 
 
 def make_fixtures(work, orig_image):

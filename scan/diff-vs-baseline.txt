@@ -1,10 +1,10 @@
 == Trivy
   baseline:  956 findings,  603 unique CVEs
   new:       585 findings,  337 unique CVEs
-  disappeared:  373  by severity {'UNKNOWN': 11, 'MEDIUM': 164, 'HIGH': 99, 'LOW': 81, 'CRITICAL': 18}
+  disappeared:  373  by severity {'HIGH': 99, 'MEDIUM': 164, 'LOW': 81, 'UNKNOWN': 11, 'CRITICAL': 18}
   appeared:       2  by severity {'LOW': 2}
   unchanged:    583
-  disappeared, by package: openssl(48), libssl3(48), libexpat1(33), libxml2(21), libgnutls30(21), perl-base(16), libcurl4(14), libde265-0(14), curl(14), libpng16-16(12), libc-bin(9), libtiff6(9)
+  disappeared, by package: libssl3(48), openssl(48), libexpat1(33), libgnutls30(21), libxml2(21), perl-base(16), curl(14), libde265-0(14), libcurl4(14), libpng16-16(12), libtiff6(9), libc-bin(9)
   appeared, by package:    nginx(2)
   CVE-2026-27171   baseline zlib1g 1:1.2.13.dfsg-1 [MEDIUM, affected]
   CVE-2026-27171   new      zlib1g 1:1.4-0+echo1 [MEDIUM, affected]
@@ -16,10 +16,10 @@
 == Grype
   baseline:  867 findings,  516 unique CVEs
   new:       505 findings,  259 unique CVEs
-  disappeared:  362  by severity {'High': 156, 'Medium': 144, 'Critical': 35, 'Low': 22, 'Unknown': 2, 'Negligible': 3}
+  disappeared:  362  by severity {'High': 156, 'Medium': 144, 'Low': 22, 'Critical': 35, 'Negligible': 3, 'Unknown': 2}
   appeared:       0  by severity {}
   unchanged:    505
-  disappeared, by package: openssl(48), libssl3(48), libexpat1(33), libgnutls30(21), libxml2(20), perl-base(16), libcurl4(14), curl(14), libpng16-16(12), libde265-0(12), libc-bin(9), libtiff6(9)
+  disappeared, by package: libssl3(48), openssl(48), libexpat1(33), libgnutls30(21), libxml2(20), perl-base(16), curl(14), libcurl4(14), libde265-0(12), libpng16-16(12), libtiff6(9), libc-bin(9)
   appeared, by package:    
   CVE-2026-27171   baseline zlib1g 1:1.2.13.dfsg-1 [Medium, wont-fix]
   CVE-2026-27171   new      zlib1g 1:1.4-0+echo1 [Medium, wont-fix]

@@ -2,15 +2,15 @@
 """Generate the targeted VEX (OpenVEX) and an upstream-components SBOM for OUR image.
 
 Why two files:
-  * echo-nginx.openvex.json - says "CVE-2026-27171, CVE-2025-23419 and CVE-2026-42945
-    are fixed"
-    for exactly one artifact: our image digest and our exact package versions
-    (+echo1). It does not touch any other image, any other version, or any other CVE.
+  * echo-nginx.openvex.json - says "CVE-2026-27171, CVE-2025-23419 and
+    CVE-2026-42945 are fixed" for exactly one artifact: our image digest and our
+    exact package versions (+echo1). It does not touch any other image, any
+    other version, or any other CVE.
   * upstream-components.cdx.json - a CycloneDX SBOM naming the upstream projects
     inside the image by CPE (f5:nginx 1.25.5, zlib:zlib 1.4). Debian-tracker based
-    package matching never reports CVE-2025-23419 on this image (see
+    package matching never reports the nginx CVEs on either image (see
     scan/diff-vs-baseline.txt), so without this SBOM there is no finding for the
-    VEX to act on; with it, Grype reports the CVEs the way NVD sees nginx 1.25.5.
+    VEX to act on; with it, Grype reports them the way NVD sees nginx 1.25.5.
 
 Digest and versions are read from the image itself, so after a rebuild just rerun:
     python3 vex/make_vex.py [IMAGE]

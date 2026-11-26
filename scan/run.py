@@ -54,10 +54,11 @@ def summary(report):
 
 def main():
     print("rescanning %s and %s" % (ORIG, NEW), file=sys.stderr)
-    for name, report in (("baseline/trivy.json", trivy(ORIG)), ("baseline/grype.json", grype(ORIG)),
-                         ("new-trivy.json", trivy(NEW)), ("new-grype.json", grype(NEW))):
+    plain = {(img, tool): scan(img) for img in (ORIG, NEW) for tool, scan in (("trivy", trivy), ("grype", grype))}
+    for name, key in (("baseline/trivy.json", (ORIG, "trivy")), ("baseline/grype.json", (ORIG, "grype")),
+                      ("new-trivy.json", (NEW, "trivy")), ("new-grype.json", (NEW, "grype"))):
         with open(os.path.join(ROOT, "scan", name), "w") as f:
-            json.dump(report, f)
+            json.dump(plain[key], f)
     diff = run(sys.executable, "scan/diff_scans.py", "scan/baseline/trivy.json", "scan/baseline/grype.json",
                "scan/new-trivy.json", "scan/new-grype.json", "--focus", *FOCUS)
     with open(os.path.join(ROOT, "scan", "diff-vs-baseline.txt"), "w") as f:
@@ -65,9 +66,10 @@ def main():
 
     out = []
     for img in (NEW, ORIG):
-        for vex in (None, VEX):
-            out.append("== %s %s" % (img, "WITH " + vex if vex else "without VEX"))
-            out += ["  trivy", summary(trivy(img, vex)), "  grype", summary(grype(img, vex))]
+        out += ["== %s without VEX" % img,
+                "  trivy", summary(plain[img, "trivy"]), "  grype", summary(plain[img, "grype"]),
+                "== %s WITH %s" % (img, VEX),
+                "  trivy", summary(trivy(img, VEX)), "  grype", summary(grype(img, VEX))]
     for vex in (None, VEX):
         out.append("== CPE scan of vex/upstream-components.cdx.json %s" % ("WITH " + vex if vex else "without VEX"))
         out += ["  grype", summary(grype(SBOM, vex))]

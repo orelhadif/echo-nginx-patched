@@ -113,7 +113,9 @@ def docker(*args, input=None, check=True):
 
 def make_certs(client):
     """Two independent CAs, a client cert from each, and a server cert."""
-    run = lambda *a: docker("exec", "-w", "/w", client, "openssl", *a)
+    def run(*args):
+        docker("exec", "-w", "/w", client, "openssl", *args)
+
     for ca in "AB":
         run("req", "-x509", "-newkey", "rsa:2048", "-nodes", "-days", "2",
             "-subj", "/CN=Test CA " + ca, "-keyout", "ca%s.key" % ca, "-out", "ca%s.crt" % ca)
