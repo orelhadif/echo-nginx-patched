@@ -1,7 +1,7 @@
 == Trivy
   baseline:  956 findings,  603 unique CVEs
   new:       585 findings,  337 unique CVEs
-  disappeared:  373  by severity {'HIGH': 99, 'MEDIUM': 164, 'LOW': 81, 'UNKNOWN': 11, 'CRITICAL': 18}
+  disappeared:  373  by severity {'MEDIUM': 164, 'LOW': 81, 'HIGH': 99, 'CRITICAL': 18, 'UNKNOWN': 11}
   appeared:       2  by severity {'LOW': 2}
   unchanged:    583
   disappeared, by package: libssl3(48), openssl(48), libexpat1(33), libgnutls30(21), libxml2(21), perl-base(16), curl(14), libde265-0(14), libcurl4(14), libpng16-16(12), libtiff6(9), libc-bin(9)
@@ -16,7 +16,7 @@
 == Grype
   baseline:  867 findings,  516 unique CVEs
   new:       505 findings,  259 unique CVEs
-  disappeared:  362  by severity {'High': 156, 'Medium': 144, 'Low': 22, 'Critical': 35, 'Negligible': 3, 'Unknown': 2}
+  disappeared:  362  by severity {'Medium': 144, 'Critical': 35, 'High': 156, 'Negligible': 3, 'Unknown': 2, 'Low': 22}
   appeared:       0  by severity {}
   unchanged:    505
   disappeared, by package: libssl3(48), openssl(48), libexpat1(33), libgnutls30(21), libxml2(20), perl-base(16), curl(14), libcurl4(14), libde265-0(12), libpng16-16(12), libtiff6(9), libc-bin(9)

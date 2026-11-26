@@ -31,7 +31,9 @@ def trivy(image, vex=None):
 
 
 def grype(target, vex=None):
-    return json.loads(run("grype", target, "-q", "-o", "json", *(["--vex", vex] if vex else [])))
+    # Grype writes its DB cache path (under the user's home) into the report.
+    out = run("grype", target, "-q", "-o", "json", *(["--vex", vex] if vex else []))
+    return json.loads(out.replace(os.path.expanduser("~"), "~"))
 
 
 def found(report):
