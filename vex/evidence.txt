@@ -15,7 +15,7 @@ zlibVersion() = 1.2.13
 probe: still running after 10s -> killed (infinite loop, VULNERABLE)
 
 ################ echo-nginx:1.25-bookworm-patched
-image id: sha256:095b3734698a393319256fdda665764673e87313fdfcc98e84c9dbdc7559ecf9
+image id: sha256:61c25d13d94b6de816a9e8be98bf65906cb0d1a28ff37d5ed5539ce3174f1941
 nginx version: nginx/1.25.5
 == CVE-2026-27171: zlib1g package in the image
 zlib1g 1:1.4-0+echo1

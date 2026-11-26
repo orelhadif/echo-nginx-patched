@@ -3,13 +3,13 @@
   "specVersion": "1.5",
   "version": 1,
   "metadata": {
-    "timestamp": "2026-11-25T16:11:37Z",
+    "timestamp": "2026-11-26T09:04:24Z",
     "component": {
       "type": "container",
       "name": "echo-nginx",
-      "version": "sha256:095b3734698a393319256fdda665764673e87313fdfcc98e84c9dbdc7559ecf9",
-      "purl": "pkg:oci/echo-nginx@sha256%3A095b3734698a393319256fdda665764673e87313fdfcc98e84c9dbdc7559ecf9",
-      "bom-ref": "pkg:oci/echo-nginx@sha256%3A095b3734698a393319256fdda665764673e87313fdfcc98e84c9dbdc7559ecf9"
+      "version": "sha256:61c25d13d94b6de816a9e8be98bf65906cb0d1a28ff37d5ed5539ce3174f1941",
+      "purl": "pkg:oci/echo-nginx@sha256%3A61c25d13d94b6de816a9e8be98bf65906cb0d1a28ff37d5ed5539ce3174f1941",
+      "bom-ref": "pkg:oci/echo-nginx@sha256%3A61c25d13d94b6de816a9e8be98bf65906cb0d1a28ff37d5ed5539ce3174f1941"
     },
     "properties": [
       {

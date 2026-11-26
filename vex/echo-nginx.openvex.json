@@ -1,9 +1,9 @@
 {
   "@context": "https://openvex.dev/ns/v0.2.0",
-  "@id": "urn:echo-nginx:vex:095b3734698a3933",
+  "@id": "urn:echo-nginx:vex:61c25d13d94b6de8",
   "author": "Echo home assignment build",
   "role": "image builder",
-  "timestamp": "2026-11-25T16:11:37Z",
+  "timestamp": "2026-11-26T09:04:24Z",
   "version": 1,
   "statements": [
     {
@@ -13,7 +13,7 @@
       },
       "products": [
         {
-          "@id": "pkg:oci/echo-nginx@sha256%3A095b3734698a393319256fdda665764673e87313fdfcc98e84c9dbdc7559ecf9",
+          "@id": "pkg:oci/echo-nginx@sha256%3A61c25d13d94b6de816a9e8be98bf65906cb0d1a28ff37d5ed5539ce3174f1941",
           "subcomponents": [
             {
               "@id": "pkg:deb/debian/zlib1g@1.4-0%2Becho1?arch=arm64&epoch=1"
@@ -34,7 +34,7 @@
       },
       "products": [
         {
-          "@id": "pkg:oci/echo-nginx@sha256%3A095b3734698a393319256fdda665764673e87313fdfcc98e84c9dbdc7559ecf9",
+          "@id": "pkg:oci/echo-nginx@sha256%3A61c25d13d94b6de816a9e8be98bf65906cb0d1a28ff37d5ed5539ce3174f1941",
           "subcomponents": [
             {
               "@id": "pkg:deb/debian/nginx@1.25.5-1~bookworm%2Becho1?arch=arm64"
@@ -58,7 +58,7 @@
       },
       "products": [
         {
-          "@id": "pkg:oci/echo-nginx@sha256%3A095b3734698a393319256fdda665764673e87313fdfcc98e84c9dbdc7559ecf9",
+          "@id": "pkg:oci/echo-nginx@sha256%3A61c25d13d94b6de816a9e8be98bf65906cb0d1a28ff37d5ed5539ce3174f1941",
           "subcomponents": [
             {
               "@id": "pkg:deb/debian/nginx@1.25.5-1~bookworm%2Becho1?arch=arm64"
