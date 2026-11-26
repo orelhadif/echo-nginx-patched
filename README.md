@@ -163,11 +163,3 @@ The VEX is tied to the digest, so rerun `make scan` after every rebuild.
 
 Next time: build amd64 too, check that two builds give identical `.deb` hashes, and push
 the image to a registry with the VEX and SBOM attached as attestations.
-
-## How AI was used
-
-I worked with Claude Code. It helped read and merge the scanner output, wrote most of
-the build and test code after explaining each change, and I approved every change and
-decision. After the first version I researched the open nginx CVEs further, added the
-High one, and simplified the project to three `make` commands, one Dockerfile and Python
-tools. I went through every file and the evidence until I could explain it myself.
